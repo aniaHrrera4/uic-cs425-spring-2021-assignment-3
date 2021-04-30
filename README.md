@@ -3,56 +3,32 @@
 ## Assignment 3: Ray tracing
 The goal of this assignment is to implement a simple ray tracer using JavaScript. You will develop an application to ray trace a scene described in an external JSON (uploaded by the user through a configuration panel). The JSON file contains camera attributes (position, fov, direction), objects in the scene (spheres or planes), as well as the position of light sources.
 
-There are four tasks, and you are free to use the skeleton code provided. The code has some comments detailing what needs to be implemented in each function; it also contains functions to handle file upload, and user interactions through the control panel. There are three main classes:
+## Run Program
+Run python -m SimpleHTTPServer or python3 -m http.server to create a http://localhost:8000/
+
+## There are three main classes:
 - `Ray`: contains the origin and direction of each ray.
 - `Intersection`: contains distance to an intersection, and intersection point.
 - `Hit`: contains an intersection and a reference to the object that the ray intersected with.
 
 File `utils.js` contains some useful functions to perform dot products, multiplication of a vector by a scalar, addition, subtraction, length, as well as a function to reflect a ray considering a surface normal.
 
-
-## Run Program
-Run python -m SimpleHTTPServer or python3 -m http.server to create a http://localhost:8000/
-
 ## CODE implemented
 
-### Tasks
-The following tasks ask you to implement a ray tracer considering different light components. Your application should enable or disable each light component according to the checkboxes in the user interface (the state of each checkbox is stored in the `ambientToggle`, `diffuseToggle`, `specularToggle` and `reflectionToggle` variables).
+### raytracer.js
 
-This repository also contains a scene description file (scene.json), but you are encouraged to create your own.
+The Main functions That were updated:
+- `intersectObjects` :  have to keep track of the closest intersection and distance and object, Loop through all objects, compute their intersection (based on object type and calling the previous two functions). Return a new Hit object, with the closest intersection and closest object, If no hit, return null
 
-#### Task 1
-You should implement a basic ray tracer shading points considering only the ambient component. In the skeleton code, the `render` function creates `width x height` rays, one for each pixel in the canvas. Function `trace` then traces the ray through the scene, intersecting each ray with all objects (functions `intersectObjects`, `raySphereIntersection` and `rayPlaneIntersection`). If there is an intersection, `trace` calls `shade` to shade the point.
+- `raySphereIntersection` : Compute intersection, t is the distance is computed through the quadratic formula. If there is a intersection, return a new Intersection object with the distance and intersection point: E.g., return new Intersection(t, point);
 
-After implementing the necessary functions, your rendered scene should look like the following:
+- `rayPlaneIntersection`: Compute intersection, If there is a intersection, return a dictionary with the distance and intersection point: E.g., return new Intersection(t, point);
 
-![Ambient component](ambient.png)
+- `sphereNormal` : Return sphere normal
 
-#### Task 2
-You should now implement the Blinn-Phong model and consider the diffuse component when shading points. Remember that you need to compute a light vector in order to compute the diffuse component. You must also take into account shadows, implementing function `isInShadow` and calling it when shading the scene.
+- `shade` :  Compute object normal, based on object type, Combine colors, taking into account object constants
 
-After implementing it, your rendered scene should look like the following:
-
-![Diffuse component](diffuse.png)
-
-#### Task 3
-You should take into account the specular component when shading points. Remember that you need to compute the half-way vector in order to compute the specular component.
-
-After implementing the necessary functions, your rendered scene should look like the following:
-
-![Specular component](specular.png)
-
-#### Task 4
-You should now consider reflected rays. In the `shade` function, if the reflection checkbox is toggled, trace **new** rays from the intersection point (and reflected considering the object's normal). You should increase the depth count when tracing the new ray with the `trace` function. The maximum recurssion depth is determined by the `maxDepth` variable and can also be adjusted via the user interface.
-
-After implementing the necessary functions, your rendered scene should look like the following when considering a max depth of 1:
-
-![Reflection component](reflection_1.png)
-
-And should look like the following when considering a max depth of 5:
-
-![Reflection component](reflection_5.png)
-
+- `isInShadow`:Check if there is an intersection between the hit.intersection.point point and the light
 
 #### JSON format
 
@@ -100,9 +76,9 @@ The following is an example of a scene JSON file:
 
 ```
 
-### Submission
-The delivery of the assignments will be done using GitHub Classes. It will not be necessary to use any external JavaScript library for your assignments. If you do find the need to use additional libraries, please send us an email or Discord message to get approval. Your assignment should contain at least the following files:
-- index.html: the main HTML file.
-- raytracer.js: assignment main source code.
-- README.md and image files: markdown readme file with a description of your program.
+### GitHub Classroom
+git is a version control system, designed to help developers track different versions of your code, synchronize them across different machines, and collaborate with others. Follow the instructions here to install git on your computer. GitHub is a website that supports git as a service. This a nice tutorial on how to get started with git and GitHub.
 
+Use git clone to get a local copy of the newly created repository. After writing your code, you can push your modifications to the server using git commit followed by git push. For example, if your username is uic-user:
+
+git clone git@github.com:uic-cs425/assignment-1-uic-user.git touch index.html git add index.html git commit -am "index.html file" git push
