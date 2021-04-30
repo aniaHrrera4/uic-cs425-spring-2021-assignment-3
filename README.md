@@ -1,4 +1,4 @@
-# CS425 - Computer Graphics I (Spring 2021)
+# CS425 - Computer Graphics I (Spring 2021) -Andrea Herrea (aherre57@uic.edu0)
 
 ## Assignment 3: Ray tracing
 The goal of this assignment is to implement a simple ray tracer using JavaScript. You will develop an application to ray trace a scene described in an external JSON (uploaded by the user through a configuration panel). The JSON file contains camera attributes (position, fov, direction), objects in the scene (spheres or planes), as well as the position of light sources.
@@ -10,8 +10,11 @@ There are four tasks, and you are free to use the skeleton code provided. The co
 
 File `utils.js` contains some useful functions to perform dot products, multiplication of a vector by a scalar, addition, subtraction, length, as well as a function to reflect a ray considering a surface normal.
 
-Here is an example of assignment 3:
-![Assignment 3 example](raytracer.png)
+
+## Run Program
+Run python -m SimpleHTTPServer or python3 -m http.server to create a http://localhost:8000/
+
+## CODE implemented
 
 ### Tasks
 The following tasks ask you to implement a ray tracer considering different light components. Your application should enable or disable each light component according to the checkboxes in the user interface (the state of each checkbox is stored in the `ambientToggle`, `diffuseToggle`, `specularToggle` and `reflectionToggle` variables).
@@ -103,7 +106,3 @@ The delivery of the assignments will be done using GitHub Classes. It will not b
 - raytracer.js: assignment main source code.
 - README.md and image files: markdown readme file with a description of your program.
 
-### Grading
-The code will be evaluated on Firefox. Your submission will be graded according to the quality of the image results, interactions, and correctness of the implemented algorithms. Your README.me file will also be graded. 
-
-To get a D on the assignment, your application should be able to load a JSON file in the format specified above, and ray trace a scene only considering the ambient component. To get a C on the assignment, you should also implement the diffuse component and shadows. To get a B, you should also implement the specular component. To get an A on the assignment, the application must be able to ray trace a scene considering ambient, diffuse, specular components, as well as reflection, and have a detailed readme file.
