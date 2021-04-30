@@ -48,19 +48,24 @@ function raySphereIntersection(ray, sphere) {
     var discriminant = Math.pow(B, 2) - 4 * A * C;
 
     var t1 = (-B - Math.sqrt(discriminant))/(2*A);
-    var t2 = (B - Math.sqrt(discriminant))/(2*A);
-    var point = add(ray.origin, d*t);
+    var t2 = (-B + Math.sqrt(discriminant))/(2*A);
+    //add(ray.origin,mult(ray.direction,t-bias)
 
     // let y = new intersection(t, point);
 
     // If there is a intersection, return a new Intersection object with the distance and intersection point:
     // E.g., return new Intersection(t, point);
 
-    if( discrimanent>= 0){
-        if(t1<t2){
+    if( discriminant>= 0){
+        if(t1 >0 && t1<t2){
+            var point = add(ray.origin,mult(ray.direction,t1-bias));
             return new Intersection(t1, point);
-        }else{
+
+        }else if(t2 >0 && t2<t1){
+
+            var point = add(ray.origin,mult(ray.direction,t2-bias));
             return new Intersection(t2, point);
+
         }
     }else{
 
@@ -72,19 +77,31 @@ function raySphereIntersection(ray, sphere) {
 
 function rayPlaneIntersection(ray, plane) {
     var p0=plane.center;
-    var d = ray.direction
+    var d = normalize(ray.direction);
     var e = ray.origin;
     var n = plane.normal;
 
     // Compute intersection
+    // console.log(ray);
+    // console.log(plane);
     var t= dot(sub(p0,e),n) / dot(n,d);
-    var hit=dot(n,d);
+    var point  = add(ray.origin,mult(ray.direction,t-bias));
+
+    var denom=dot(n,d);
     //𝐧*𝐝 ≠ 0 one intersection
     // If there is a intersection, return a dictionary with the distance and intersection point:
     // E.g., return new Intersection(t, point);
-    if( hit== 0){
+    //if(Math.abs(denom) > 0.0001) 
+    if( Math.abs(denom) > 0.0001){
+        if(t>0){
+            //
+            //new Intersection(t, add(ray.origin,mult(ray.direction,t-bias)));
+            return new Intersection(t, point);
+        }else{
+            return null;
+        
+        }
 
-        return new Intersection(t, point);
     }else{
 
         return null;
@@ -94,31 +111,49 @@ function rayPlaneIntersection(ray, plane) {
 }
 
 function intersectObjects(ray, depth) {
-
+    //have to keep track of the closest intersection and sistance and object 
+    var closestDist=Infinity; //values check sthe current closest distance 
+    var closestObj=null;
+    var closestIntersection =null;
 
     // Loop through all objects, compute their intersection (based on object type and calling the previous two functions)
     // Return a new Hit object, with the closest intersection and closest object
     for(var i=0; i < scene.objects.length; i++) {
         var object = scene.objects[i];
         var dist; //= rayTriangleIntersection(ray, object);
+        var intersection; 
+
+        
         
         var type = scene.objects[i].type;
         //console.log(type);
 
-        if(type = "plane"){
-            dist = rayPlaneIntersection(ray, object);
-        }else if(type = "sphere"){
-            dist = raySphereIntersection(ray, object);
+        if(type == "plane"){
+            intersection = rayPlaneIntersection(ray, object);
+
+        }else if(type == "sphere"){
+            intersection = raySphereIntersection(ray, object);
+            
+        }
+
+        if(intersection !=null){
+            
+            if(intersection.distance <closestDist){
+                closestDist = intersection.distance;
+                closestObj = object; 
+                closestIntersection = intersection;
+            }
         }
         
-
-        if(dist != null){
-            return new Hit(dist,object);
-        }else{
-            return null;
-        }
+    
     }
     // If no hit, retur null
+
+    if(closestObj !=null){
+        return new Hit(closestIntersection,closestObj);
+    }else{
+        return null;
+    }
 
 }
 
@@ -134,7 +169,7 @@ function shade(ray, hit, depth) {
 
     var object = hit.object;
     var color = [0,0,0];
-    var type = scene.object.type;
+    var type = object.type;
    
     
     
@@ -163,30 +198,33 @@ function shade(ray, hit, depth) {
     // the L's are the light colors, you can ignore that as all lights are white
     // the results of these components multiply the object color defined in the json file
 
-    for(var i=0; i < scene.lights.length; i++) {
-        var l = scene.lights[i].position;
-        var v = scene.objects.reflectiveK;
-        var hm = add(l,v)/Math.abs(add(l,v))
-        var a =  scene.objects.specularExponent;
-        //diffuse = kdiffuse(ln)
-        //specular = kspecular(hn)^a
-        diffuse += dot(l,normal);
-        specular += Math.pow(dot(hm,v),a);
+    for(var i=0; i < object.length; i++) {
+        //what is l??
+        var l = object.lights.position;
+        var v = mult(ray.direction,-1);
+        //v is the rate of direction mutiplied -1
+        //double is the length of the vector normalize
+        var hm = normalize(add(l,mult(ray.direction,-1)));
+
+        var a =  object.specularExponent;
+        // diffuse = kdiffuse(ln)
+        // specular = kspecular(hn)^a
+      // diffuse += object.diffuseK *dot(l,normal);
+        // specular += Math.pow(dot(hm,v),a);
 
     }
 
 
     // Combine colors, taking into account object constants
-    //color = (object.color * object.ambientK) + (object.color *diffuse) + (object.color * specular)
-    //mult(object.color, total)
-    var total =  scene.objects.ambientk +diffuse + specular;
-    var prevColor = mult(scene.objects.color,total);
+    var total =  object.ambientK + diffuse + specular ;
+    var prevColor = mult(object.color,total);
+    //console.log(total);
     // Handle reflection, make sure to call trace incrementing depth
-    var reflection = reflect(normalize(mult(ray.direction,-1),normal));
-    var newRay = new Ray(object.center, reflection);
-    var newColor = trace(newRay, depth+1);
-    color = prevColor + newColor * (scene.objects.reflectiveK)
-
+    // var reflection = reflect(mult(normalize(ray.direction),-1),normal);
+    // var newRay = new Ray(object.center, reflection);
+    // var newColor = trace(newRay, depth+1);
+    // color = prevColor + (newColor * object.reflectiveK);
+    color =prevColor;
     return color;
 }
 
