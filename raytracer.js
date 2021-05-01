@@ -179,12 +179,14 @@ function shade(ray, hit, depth) {
 
     //console.log(type);
 
-    if(type = "plane"){
+    if(type == "plane"){
         normal = normalize(object);
-    }else if(type = "sphere"){
+    }else if(type == "sphere"){
         //You are passing into shade a hit which should store a point
         normal = sphereNormal(object, hit.intersection);
     }
+
+    //console.log(hit);
 
     // Loop through all lights, computing diffuse and specular components *if not in shadow*
     var diffuse = 0;
@@ -198,9 +200,11 @@ function shade(ray, hit, depth) {
     // the L's are the light colors, you can ignore that as all lights are white
     // the results of these components multiply the object color defined in the json file
 
-    for(var i=0; i < object.length; i++) {
+    for(var i=0; i < scene.lights.length; i++) {
         //what is l??
-        var l = object.lights.position;
+        var light = scene.lights[i];
+
+        var l = normalize(sub(scene.lights[i].position, hit.intersection.point));
         var v = mult(ray.direction,-1);
         //v is the rate of direction mutiplied -1
         //double is the length of the vector normalize
@@ -209,11 +213,12 @@ function shade(ray, hit, depth) {
         var a =  object.specularExponent;
         // diffuse = kdiffuse(ln)
         // specular = kspecular(hn)^a
-      // diffuse += object.diffuseK *dot(l,normal);
-        // specular += Math.pow(dot(hm,v),a);
-
+       if(isInShadow(hit, light)){
+            diffuse += object.diffuseK * dot(l,normal);
+            specular += (dot(hm,v)*object.specularK)**a;
+            //console.log(specular);
+        }
     }
-
 
     // Combine colors, taking into account object constants
     var total =  object.ambientK + diffuse + specular ;
@@ -247,10 +252,19 @@ function trace(ray, depth) {
 function isInShadow(hit, light) {
 
     // Check if there is an intersection between the hit.intersection.point point and the light
-    var dist = new intersection(light.position,hit.intersection.point);
+    var nray = new Ray(hit.intersection.point,normalize(sub(light.position,hit.intersection.point)));
+    var intersection = intersectObjects(nray,1)
+    // but you'll also want to make sure that the new intersection doesn't 
+    //have the same object as the original hit
+    // additionally, you want to only check if the intersection is
+    // in the right direction from the current object
+    // because eventually it will intersect with the plane behind the
+    // object (from ray's perspective)
+
     // If so, return true
     // If not, return false
-    if(dist != null){
+    if(intersection != null){
+        
         return true;
     }else{
         return false;
