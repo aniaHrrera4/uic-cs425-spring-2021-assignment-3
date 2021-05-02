@@ -199,24 +199,22 @@ function shade(ray, hit, depth) {
     // and alpha is the shiness factor, also in the json file
     // the L's are the light colors, you can ignore that as all lights are white
     // the results of these components multiply the object color defined in the json file
+    //v is the rate of direction mutiplied -1
+    //double is the length of the vector normalize
+
+    var a =  object.specularExponent
 
     for(var i=0; i < scene.lights.length; i++) {
         //what is l??
         var light = scene.lights[i];
-
-        var l = normalize(sub(scene.lights[i].position, hit.intersection.point));
         var v = mult(ray.direction,-1);
-        //v is the rate of direction mutiplied -1
-        //double is the length of the vector normalize
-        var hm = normalize(add(l,mult(ray.direction,-1)));
-
-        var a =  object.specularExponent;
+        var l =  normalize(sub(scene.lights[i].position, hit.intersection.point));
+;       var hm = normalize(add(l,v));
         // diffuse = kdiffuse(ln)
         // specular = kspecular(hn)^a
        if(isInShadow(hit, light)){
             diffuse += object.diffuseK * dot(l,normal);
-            specular += (dot(hm,v)*object.specularK)**a;
-            //console.log(specular);
+            specular += (object.specularK * dot(hm,v))**a;
         }
     }
 
@@ -225,8 +223,8 @@ function shade(ray, hit, depth) {
     var prevColor = mult(object.color,total);
     //console.log(total);
     // Handle reflection, make sure to call trace incrementing depth
-    // var reflection = reflect(mult(normalize(ray.direction),-1),normal);
-    // var newRay = new Ray(object.center, reflection);
+    // var reflection = reflect(v,normal);
+    // var newRay = new Ray(object.center, normalize(reflection));
     // var newColor = trace(newRay, depth+1);
     // color = prevColor + (newColor * object.reflectiveK);
     color =prevColor;
@@ -264,8 +262,12 @@ function isInShadow(hit, light) {
     // If so, return true
     // If not, return false
     if(intersection != null){
-        
-        return true;
+        if(intersection.intersection.distance >0){
+            return true;
+
+        }else{
+            return false;
+        }
     }else{
         return false;
     }
